@@ -8,19 +8,16 @@ require("dotenv").config();
 const app = express();
 
 /* ---------------- Middleware ---------------- */
-
 app.use(cors());
 app.use(express.json());
 
-/* ---------------- MongoDB Connection ---------------- */
-
+/* ---------------- MongoDB ---------------- */
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB Error:", err));
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log(err));
 
-/* ---------------- Schema ---------------- */
-
+/* ---------------- Student Schema ---------------- */
 const studentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -30,22 +27,28 @@ const studentSchema = new mongoose.Schema({
 
 const Student = mongoose.model("Student", studentSchema);
 
+/* ---------------- Grievance Schema ---------------- */
+const grievanceSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  studentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Student",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const Grievance = mongoose.model("Grievance", grievanceSchema);
+
 /* ---------------- Auth Middleware ---------------- */
-
 const authMiddleware = (req, res, next) => {
-  const authHeader = req.header("Authorization");
+  const token = req.header("Authorization");
 
-  if (!authHeader) {
-    return res.status(401).json({ error: "Access denied" });
-  }
-
-  let token;
-
-  // ✅ Support BOTH formats
-  if (authHeader.startsWith("Bearer ")) {
-    token = authHeader.split(" ")[1];
-  } else {
-    token = authHeader; // raw token
+  if (!token) {
+    return res.status(401).json({ error: "Access Denied" });
   }
 
   try {
@@ -53,14 +56,14 @@ const authMiddleware = (req, res, next) => {
     req.student = verified;
     next();
   } catch (err) {
-    return res.status(400).json({ error: "Invalid token" });
+    res.status(400).json({ error: "Invalid Token" });
   }
 };
 
 /* ---------------- Routes ---------------- */
 
 /* Register */
-app.post("/api/register", async (req, res, next) => {
+app.post("/api/register", async (req, res) => {
   try {
     const { name, email, password, course } = req.body;
 
@@ -80,14 +83,14 @@ app.post("/api/register", async (req, res, next) => {
 
     await student.save();
 
-    res.status(201).json({ message: "Registered successfully" });
+    res.json({ message: "Registered successfully" });
   } catch (err) {
-    next(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
 /* Login */
-app.post("/api/login", async (req, res, next) => {
+app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -104,74 +107,89 @@ app.post("/api/login", async (req, res, next) => {
     const token = jwt.sign(
       { id: student._id },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1d" }
     );
 
     res.json({ token });
   } catch (err) {
-    next(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
 /* Dashboard */
-app.get("/api/dashboard", authMiddleware, async (req, res, next) => {
+app.get("/api/dashboard", authMiddleware, async (req, res) => {
   try {
     const student = await Student.findById(req.student.id).select("-password");
     res.json(student);
   } catch (err) {
-    next(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-/* Update Password */
-app.put("/api/update-password", authMiddleware, async (req, res, next) => {
+/* ---------------- Grievance Routes ---------------- */
+
+/* Add Grievance */
+app.post("/api/grievances", authMiddleware, async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const { title, description } = req.body;
 
-    const student = await Student.findById(req.student.id);
+    const grievance = new Grievance({
+      title,
+      description,
+      studentId: req.student.id,
+    });
 
-    const isMatch = await bcrypt.compare(oldPassword, student.password);
-    if (!isMatch) {
-      return res.status(400).json({ error: "Old password incorrect" });
-    }
+    await grievance.save();
 
-    student.password = await bcrypt.hash(newPassword, 10);
-    await student.save();
-
-    res.json({ message: "Password updated" });
+    res.json({ message: "Grievance added successfully" });
   } catch (err) {
-    next(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-/* Update Course */
-app.put("/api/update-course", authMiddleware, async (req, res, next) => {
+/* Get Grievances */
+app.get("/api/grievances", authMiddleware, async (req, res) => {
   try {
-    const { course } = req.body;
+    const data = await Grievance.find({ studentId: req.student.id }).sort({
+      createdAt: -1,
+    });
 
-    const student = await Student.findByIdAndUpdate(
-      req.student.id,
-      { course },
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* Update Grievance */
+app.put("/api/grievances/:id", authMiddleware, async (req, res) => {
+  try {
+    const { title, description } = req.body;
+
+    const updated = await Grievance.findByIdAndUpdate(
+      req.params.id,
+      { title, description },
       { new: true }
     );
 
-    res.json(student);
+    res.json(updated);
   } catch (err) {
-    next(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-/* ---------------- Error Handler ---------------- */
-
-app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.message);
-  res.status(500).json({ error: err.message || "Server Error" });
+/* Delete Grievance */
+app.delete("/api/grievances/:id", authMiddleware, async (req, res) => {
+  try {
+    await Grievance.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* ---------------- Server ---------------- */
-
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
