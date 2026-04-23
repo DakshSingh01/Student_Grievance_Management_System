@@ -1,0 +1,249 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+/* BACKGROUND */
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4f46e5, #9333ea);
+  color: white;
+}
+
+/* ================= AUTH (LOGIN / REGISTER) ================= */
+
+.auth-container {
+  display: flex;
+  height: 100vh;
+}
+
+.auth-left {
+  width: 45%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-card {
+  width: 80%;
+  max-width: 400px;
+  padding: 40px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.auth-card h2 {
+  margin-bottom: 20px;
+}
+
+.auth-card input {
+  width: 100%;
+  padding: 14px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.auth-card input::placeholder {
+  color: #ddd;
+}
+
+.auth-card button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #06b6d4, #3b82f6);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.auth-card button:hover {
+  transform: scale(1.05);
+}
+
+.auth-card p {
+  margin-top: 15px;
+}
+
+.auth-card a {
+  color: #06b6d4;
+  text-decoration: none;
+}
+
+/* RIGHT IMAGE SIDE */
+.auth-right {
+  width: 55%;
+  background: url("https://images.unsplash.com/photo-1522071820081-009f0129c71c")
+    no-repeat center;
+  background-size: cover;
+}
+
+/* MOBILE */
+@media (max-width: 900px) {
+  .auth-right {
+    display: none;
+  }
+  .auth-left {
+    width: 100%;
+  }
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+.navbar h2 {
+  font-size: 20px;
+}
+
+/* NAV LINKS */
+.nav-links a,
+.nav-links button {
+  margin-left: 15px;
+  padding: 8px 15px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #06b6d4, #3b82f6);
+  color: white;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.nav-links a:hover,
+.nav-links button:hover {
+  transform: scale(1.1);
+}
+
+/* ================= CENTER CONTENT ================= */
+
+.page-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 80px);
+}
+
+/* ================= CARD ================= */
+
+.card {
+  width: 400px;
+  padding: 30px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px);
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.card h2 {
+  margin-bottom: 20px;
+}
+
+/* ================= INPUT + BUTTON ================= */
+
+.input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #06b6d4, #3b82f6);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+/* ================= LIST ================= */
+
+.card div {
+  margin: 10px 0;
+}
+/* ===== SPLIT PAGE (FOR ALL INNER PAGES) ===== */
+
+.split-page {
+  display: flex;
+  height: calc(100vh - 70px);
+}
+
+/* LEFT CONTENT */
+.split-left {
+  width: 45%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* RIGHT IMAGE */
+.split-right {
+  width: 55%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.split-right::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+}
+
+/* TEXT OVER IMAGE */
+.split-overlay {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  color: white;
+  z-index: 2;
+}
+
+.split-overlay h1 {
+  font-size: 30px;
+}
+
+.split-overlay p {
+  opacity: 0.8;
+}
+
+/* MOBILE */
+@media(max-width: 900px) {
+  .split-right {
+    display: none;
+  }
+  .split-left {
+    width: 100%;
+  }
+}
